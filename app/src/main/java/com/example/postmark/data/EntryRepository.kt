@@ -3,7 +3,6 @@ package com.example.postmark.data
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
-import com.google.firebase.storage.FirebaseStorage
 import android.net.Uri
 import io.github.jan.supabase.createSupabaseClient
 import io.github.jan.supabase.storage.Storage
@@ -18,19 +17,11 @@ import java.util.UUID
 
 /**
  * Firestore reads/writes for journal entries.
- *
- * Data model is flat and per-user:
- *   users/{uid}/entries/{entryId}
- *
- * That nesting makes security rules trivial — see firestore.rules in the repo:
- *   match /users/{userId}/entries/{entry} {
- *     allow read, write: if request.auth.uid == userId;
- *   }
+ * Supabase reads/writes for images.
  */
 class EntryRepository {
     private val db = FirebaseFirestore.getInstance()
     private val auth = FirebaseAuth.getInstance()
-//    private val storage = FirebaseStorage.getInstance()
 
     val supabase = createSupabaseClient(
         supabaseUrl = "https://rebbansdrlkzbgndhobe.supabase.co",
@@ -65,14 +56,10 @@ class EntryRepository {
     suspend fun uploadPhoto(uri: Uri, contentResolver: android.content.ContentResolver): String = withContext(Dispatchers.IO) {
         val uid = auth.currentUser?.uid ?: throw IllegalStateException("Not signed in")
         val name = "${UUID.randomUUID()}.jpg"
-//        val ref = storage.reference.child("photos/$uid/$name")
-        val path = "photos/$uid/$name"
+        val path = "$uid/$name"
 
         val bytes = contentResolver.openInputStream(uri)?.use { it.readBytes() }
             ?: throw IllegalStateException("Could not read image bytes")
-
-//        ref.putBytes(bytes).await()
-//        ref.downloadUrl.await().toString()
 
         supabase.storage
             .from("photos")
