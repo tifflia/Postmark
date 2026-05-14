@@ -30,8 +30,13 @@ class AuthRepository {
         auth.signInWithEmailAndPassword(email, password).await().user!!
     }
 
-    suspend fun register(email: String, password: String): Result<FirebaseUser> = runCatching {
-        auth.createUserWithEmailAndPassword(email, password).await().user!!
+    suspend fun register(email: String, password: String, displayName: String): Result<FirebaseUser> = runCatching {
+        val user = auth.createUserWithEmailAndPassword(email, password).await().user!!
+        val profileUpdates = com.google.firebase.auth.userProfileChangeRequest {
+            this.displayName = displayName
+        }
+        user.updateProfile(profileUpdates).await()
+        user
     }
 
     fun signOut() = auth.signOut()

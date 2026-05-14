@@ -1,12 +1,17 @@
 package com.example.postmark.ui.login
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -17,7 +22,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
@@ -83,6 +87,32 @@ fun LoginScreen(
 
                 Spacer(Modifier.height(48.dp))
 
+                AnimatedVisibility(
+                    visible = state.isRegistering,
+                    enter = fadeIn() + expandVertically(),
+                    exit = fadeOut() + shrinkVertically()
+                ) {
+                    Column {
+                        FieldLabel("Name")
+                        OutlinedTextField(
+                            value = state.name,
+                            onValueChange = vm::onNameChange,
+                            modifier = Modifier.fillMaxWidth(),
+                            singleLine = true,
+                            shape = RoundedCornerShape(8.dp),
+                            colors = inkColors(),
+                            placeholder = {
+                                Text(
+                                    "As you'd like it to appear",
+                                    color = MutedStone.copy(alpha = 0.5f),
+                                    fontSize = 14.sp
+                                )
+                            }
+                        )
+                        Spacer(Modifier.height(20.dp))
+                    }
+                }
+
                 FieldLabel("Email")
                 OutlinedTextField(
                     value = state.email,
@@ -112,28 +142,36 @@ fun LoginScreen(
 
                 Spacer(Modifier.height(28.dp))
 
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    OutlinedButton(
-                        onClick = vm::register,
-                        enabled = !state.loading,
-                        modifier = Modifier.weight(1f).height(52.dp),
-                        shape = RoundedCornerShape(8.dp),
-                        contentPadding = PaddingValues()
-                    ) {
-                        Text("REGISTER", letterSpacing = 2.sp, fontSize = 13.sp)
-                    }
-                    Button(
-                        onClick = vm::login,
-                        enabled = !state.loading,
-                        modifier = Modifier.weight(1f).height(52.dp),
-                        shape = RoundedCornerShape(8.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = InkBlack, contentColor = Parchment),
-                        contentPadding = PaddingValues()
-                    ) {
-                        if (state.loading) CircularProgressIndicator(modifier = Modifier.height(20.dp), color = Parchment, strokeWidth = 2.dp)
-                        else Text("LOGIN", letterSpacing = 2.sp, fontSize = 13.sp)
-                    }
+                Button(
+                    onClick = { if (state.isRegistering) vm.register() else vm.login() },
+                    enabled = !state.loading,
+                    modifier = Modifier.fillMaxWidth().height(52.dp),
+                    shape = RoundedCornerShape(8.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = InkBlack, contentColor = Parchment),
+                    contentPadding = PaddingValues()
+                ) {
+                    if (state.loading) CircularProgressIndicator(
+                        modifier = Modifier.height(20.dp),
+                        color = Parchment,
+                        strokeWidth = 2.dp
+                    )
+                    else Text(
+                        if (state.isRegistering) "CREATE ACCOUNT" else "LOGIN",
+                        letterSpacing = 2.sp,
+                        fontSize = 13.sp
+                    )
                 }
+
+                Spacer(Modifier.height(16.dp))
+
+                Text(
+                    text = if (state.isRegistering) "Already have an account? Login" else "Don't have an account? Register",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = InkBlack,
+                    modifier = Modifier
+                        .clickable { vm.setRegistering(!state.isRegistering) }
+                        .padding(vertical = 8.dp)
+                )
             }
 
             Text(

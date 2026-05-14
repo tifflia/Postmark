@@ -42,6 +42,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
+import com.example.postmark.auth.AuthRepository
 import com.example.postmark.data.Entry
 import com.example.postmark.ui.components.PostmarkOverflowMenu
 import com.example.postmark.ui.components.formatIsoDate
@@ -56,10 +57,12 @@ fun ListScreen(
     onNewEntry: () -> Unit,
     onSwitchToMap: () -> Unit,
     onSignOut: () -> Unit,
-    vm: EntriesViewModel = viewModel()
+    vm: EntriesViewModel = viewModel(),
+    auth: AuthRepository = AuthRepository()
 ) {
     val entries by vm.entries.collectAsState()
     var menuOpen by remember { mutableStateOf(false) }
+    val user = auth.currentUser
 
     Box(modifier = Modifier.fillMaxSize().background(Parchment)) {
         Column(modifier = Modifier.fillMaxSize()) {
@@ -73,7 +76,7 @@ fun ListScreen(
                 Column {
                     Text("WELCOME BACK", style = MaterialTheme.typography.labelMedium, color = MutedStone)
                     Spacer(Modifier.height(4.dp))
-                    Text("John", style = MaterialTheme.typography.headlineLarge, color = InkBlack)
+                    Text(user?.displayName ?: "Traveler", style = MaterialTheme.typography.headlineLarge, color = InkBlack)
                 }
                 Box {
                     IconButton(onClick = { menuOpen = true }) {
