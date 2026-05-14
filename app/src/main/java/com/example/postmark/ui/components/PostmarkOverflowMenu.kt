@@ -16,7 +16,6 @@ import com.example.postmark.R
 
 /**
  * The dropdown shown when the hamburger icon is tapped on List and Map views.
- * Mirrors the blueprint: switch view, Filter, Delete All.
  */
 @Composable
 fun PostmarkOverflowMenu(

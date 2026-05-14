@@ -76,6 +76,7 @@ import com.example.postmark.ui.theme.InkBlack
 import com.example.postmark.ui.theme.MutedStone
 import com.example.postmark.ui.theme.PaperWhite
 import com.example.postmark.ui.theme.Parchment
+import com.example.postmark.ui.theme.StampRed
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
@@ -135,7 +136,7 @@ fun NewEntryScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 TextButton(onClick = onDone) {
-                    Text(stringResource(R.string.cancel_btn), color = Color(0xFF4A86E8), fontWeight = FontWeight.Medium)
+                    Text(stringResource(R.string.cancel_btn), color = StampRed, fontWeight = FontWeight.Medium)
                 }
                 Text(
                     stringResource(R.string.new_entry),
@@ -147,7 +148,7 @@ fun NewEntryScreen(
                     onClick = { vm.save(context.contentResolver) },
                     enabled = !state.saving && state.body.isNotBlank()
                 ) {
-                    Text(stringResource(R.string.save_btn), color = Color(0xFF4A86E8), fontWeight = FontWeight.Medium)
+                    Text(stringResource(R.string.save_btn), color = StampRed, fontWeight = FontWeight.Medium)
                 }
             }
 

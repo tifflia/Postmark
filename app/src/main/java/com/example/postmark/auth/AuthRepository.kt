@@ -9,10 +9,6 @@ import kotlinx.coroutines.tasks.await
 
 /**
  * Thin wrapper over Firebase Auth.
- *
- * Firebase persists the auth state on disk by default — once a user logs in,
- * they stay logged in across app restarts until they explicitly sign out.
- * This answers the "how long to keep user logged in?" note from the blueprint.
  */
 class AuthRepository {
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()

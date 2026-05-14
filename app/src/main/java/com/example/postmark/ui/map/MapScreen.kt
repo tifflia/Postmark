@@ -81,7 +81,6 @@ fun MapScreen(
         ActivityResultContracts.RequestPermission()
     ) { _ -> /* Result handled by the button click logic usually */ }
 
-    // Default camera somewhere central; in production, pan to fit user's pins.
     val cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(LatLng(20.0, 0.0), 2f)
     }
@@ -144,7 +143,6 @@ fun MapScreen(
                 }
             }
 
-            // Map area with paper-style border and custom controls
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -193,7 +191,7 @@ fun MapScreen(
                     }
                 }
 
-                // My Location / Detect Button (Bottom Right of Map, above FAB)
+                // My Location Button
                 IconButton(
                     onClick = { moveToUserLocation() },
                     modifier = Modifier
