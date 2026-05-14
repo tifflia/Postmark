@@ -1,7 +1,6 @@
 package com.example.postmark.ui.entry
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,9 +16,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.ArrowBack
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Delete
-import androidx.compose.material.icons.outlined.Image
 import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
@@ -35,9 +33,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.AsyncImage
 import com.example.postmark.ui.components.formatIsoDate
 import com.example.postmark.ui.list.EntriesViewModel
 import com.example.postmark.ui.theme.InkBlack
@@ -64,7 +66,7 @@ fun EntryDetailScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 IconButton(onClick = onBack) {
-                    Icon(Icons.Outlined.ArrowBack, contentDescription = "Back", tint = InkBlack)
+                    Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "Back", tint = InkBlack)
                 }
                 IconButton(onClick = { confirmDelete = true }) {
                     Icon(Icons.Outlined.Delete, contentDescription = "Delete", tint = InkBlack)
@@ -102,18 +104,19 @@ fun EntryDetailScreen(
                     Spacer(Modifier.height(24.dp))
                     Text(entry.body, style = MaterialTheme.typography.bodyLarge, color = InkBlack)
 
-                    Spacer(Modifier.height(32.dp))
-
-                    // Photo placeholder. Wire up Coil + Cloud Storage URL here later.
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .aspectRatio(4f / 3f)
-                            .border(2.dp, InkBlack, RoundedCornerShape(2.dp))
-                            .background(PaperWhite, RoundedCornerShape(2.dp)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(Icons.Outlined.Image, contentDescription = null, tint = MutedStone, modifier = Modifier.size(48.dp))
+                    if (entry.photoUrl != null) {
+                        Spacer(Modifier.height(32.dp))
+                        AsyncImage(
+                            model = entry.photoUrl,
+                            contentDescription = "Entry photo",
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .aspectRatio(4f / 3f)
+                                .shadow(4.dp, RoundedCornerShape(8.dp))
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(PaperWhite),
+                            contentScale = ContentScale.Crop
+                        )
                     }
 
                     Spacer(Modifier.height(40.dp))

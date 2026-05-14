@@ -1,7 +1,6 @@
 package com.example.postmark.ui.list
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -35,10 +34,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.AsyncImage
 import com.example.postmark.data.Entry
 import com.example.postmark.ui.components.PostmarkOverflowMenu
 import com.example.postmark.ui.components.formatIsoDate
@@ -81,7 +84,6 @@ fun ListScreen(
                         onDismiss = { menuOpen = false },
                         isOnListView = true,
                         onSwitchView = onSwitchToMap,
-                        onFilter = { /* TODO: filter dialog */ },
                         onDeleteAll = { vm.deleteAll() },
                         onSignOut = onSignOut
                     )
@@ -145,27 +147,41 @@ private fun EntryCard(entry: Entry, onClick: () -> Unit) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .border(2.dp, InkBlack, RoundedCornerShape(2.dp))
-            .background(PaperWhite, RoundedCornerShape(2.dp))
+            .shadow(4.dp, RoundedCornerShape(8.dp))
+            .background(PaperWhite, RoundedCornerShape(8.dp))
             .clickable { onClick() }
             .padding(horizontal = 16.dp, vertical = 12.dp)
     ) {
-        Column {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
                 Text(formatIsoDate(entry.date), style = MaterialTheme.typography.titleLarge, color = InkBlack)
-                Text("→", color = MutedStone, fontSize = 14.sp)
-            }
-            if (entry.location.isNotBlank()) {
-                Spacer(Modifier.height(4.dp))
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Outlined.LocationOn, contentDescription = null, tint = MutedStone, modifier = Modifier.size(14.dp))
-                    Spacer(Modifier.size(4.dp))
-                    Text(entry.location, style = MaterialTheme.typography.bodyMedium, color = MutedStone, fontSize = 13.sp)
+                if (entry.location.isNotBlank()) {
+                    Spacer(Modifier.height(4.dp))
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Outlined.LocationOn, contentDescription = null, tint = MutedStone, modifier = Modifier.size(14.dp))
+                        Spacer(Modifier.size(4.dp))
+                        Text(entry.location, style = MaterialTheme.typography.bodyMedium, color = MutedStone, fontSize = 13.sp)
+                    }
                 }
+            }
+            
+            if (entry.photoUrl != null) {
+                Spacer(Modifier.size(12.dp))
+                AsyncImage(
+                    model = entry.photoUrl,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .size(60.dp)
+                        .clip(RoundedCornerShape(4.dp))
+                        .background(Parchment),
+                    contentScale = ContentScale.Crop
+                )
+            } else {
+                Text("→", color = MutedStone, fontSize = 14.sp)
             }
         }
     }

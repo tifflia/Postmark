@@ -1,24 +1,46 @@
 package com.example.postmark.ui.entry
 
 import android.Manifest
+import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.ArrowBack
-import androidx.compose.material.icons.outlined.CameraAlt
-import androidx.compose.material.icons.outlined.PhotoLibrary
-import androidx.compose.material.icons.outlined.TextFields
+import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.Collections
+import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.outlined.ExpandLess
+import androidx.compose.material.icons.outlined.ExpandMore
+import androidx.compose.material.icons.outlined.Fullscreen
+import androidx.compose.material.icons.outlined.History
+import androidx.compose.material.icons.outlined.Image
+import androidx.compose.material.icons.outlined.LocationOn
+import androidx.compose.material.icons.outlined.Map
+import androidx.compose.material.icons.outlined.MyLocation
+import androidx.compose.material.icons.outlined.PhotoCamera
+import androidx.compose.material.icons.outlined.Remove
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -28,18 +50,40 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.FileProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.postmark.ui.components.formatIsoDate
+import coil.compose.AsyncImage
 import com.example.postmark.ui.theme.InkBlack
 import com.example.postmark.ui.theme.MutedStone
+import com.example.postmark.ui.theme.PaperWhite
 import com.example.postmark.ui.theme.Parchment
+import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.model.CameraPosition
+import com.google.android.gms.maps.model.LatLng
+import com.google.maps.android.compose.GoogleMap
+import com.google.maps.android.compose.MapUiSettings
+import com.google.maps.android.compose.Marker
+import com.google.maps.android.compose.MarkerState
+import com.google.maps.android.compose.rememberCameraPositionState
+import kotlinx.coroutines.launch
+import java.io.File
 
 @Composable
 fun NewEntryScreen(
@@ -48,13 +92,29 @@ fun NewEntryScreen(
 ) {
     val state by vm.state.collectAsState()
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+
+    var locationExpanded by remember { mutableStateOf(true) }
+    var photoExpanded by remember { mutableStateOf(state.selectedImageUri != null) }
+    var tempImageUri by remember { mutableStateOf<Uri?>(null) }
+
+    LaunchedEffect(state.selectedImageUri) {
+        if (state.selectedImageUri != null) photoExpanded = true
+    }
+
+    val photoPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? -> vm.onImageSelected(uri) }
+
+    val cameraLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.TakePicture()
+    ) { success -> if (success) vm.onImageSelected(tempImageUri) }
 
     val locationPermission = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { granted -> if (granted) vm.fetchCurrentLocation(context) }
 
     LaunchedEffect(Unit) {
-        // Auto-detect location on screen open. Saves the user typing.
         locationPermission.launch(Manifest.permission.ACCESS_FINE_LOCATION)
     }
 
@@ -62,89 +122,428 @@ fun NewEntryScreen(
 
     Box(modifier = Modifier.fillMaxSize().background(Parchment)) {
         Column(modifier = Modifier.fillMaxSize()) {
-
-            // Top bar — back, format icons, Done
+            // Header
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(start = 8.dp, end = 16.dp, top = 48.dp, bottom = 12.dp),
+                    .padding(start = 16.dp, end = 16.dp, top = 48.dp, bottom = 12.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                IconButton(onClick = onDone) {
-                    Icon(Icons.Outlined.ArrowBack, contentDescription = "Cancel", tint = InkBlack)
+                TextButton(onClick = onDone) {
+                    Text("Cancel", color = Color(0xFF4A86E8), fontWeight = FontWeight.Medium)
                 }
-                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                    IconButton(onClick = { /* TODO: text format */ }) {
-                        Icon(Icons.Outlined.TextFields, contentDescription = "Text format", tint = InkBlack)
-                    }
-                    IconButton(onClick = { /* TODO: photo album */ }) {
-                        Icon(Icons.Outlined.PhotoLibrary, contentDescription = "Photo album", tint = InkBlack)
-                    }
-                    IconButton(onClick = { /* TODO: camera */ }) {
-                        Icon(Icons.Outlined.CameraAlt, contentDescription = "Camera", tint = InkBlack)
-                    }
-                }
-                TextButton(onClick = vm::save, enabled = !state.saving && state.body.isNotBlank()) {
-                    Text(
-                        "DONE",
-                        style = MaterialTheme.typography.labelLarge,
-                        color = InkBlack,
-                        letterSpacing = 2.sp
-                    )
+                Text(
+                    "New entry",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = InkBlack,
+                    fontWeight = FontWeight.Bold
+                )
+                TextButton(
+                    onClick = { vm.save(context.contentResolver) },
+                    enabled = !state.saving && state.body.isNotBlank()
+                ) {
+                    Text("Save", color = Color(0xFF4A86E8), fontWeight = FontWeight.Medium)
                 }
             }
 
-            Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(MutedStone))
-            Spacer(Modifier.height(20.dp))
+            Column(modifier = Modifier.padding(horizontal = 24.dp)) {
+                Spacer(Modifier.height(16.dp))
 
-            Column(modifier = Modifier.padding(horizontal = 24.dp).fillMaxSize()) {
-                Text("NEW ENTRY", style = MaterialTheme.typography.labelMedium, color = MutedStone)
-                Spacer(Modifier.height(4.dp))
-                Text(formatIsoDate(state.date), style = MaterialTheme.typography.headlineMedium, color = InkBlack)
-                Spacer(Modifier.height(4.dp))
-
-                BasicTextField(
-                    value = state.location,
-                    onValueChange = vm::onLocationChange,
-                    textStyle = TextStyle(
-                        fontStyle = FontStyle.Italic,
-                        color = MutedStone,
-                        fontSize = 14.sp
-                    ),
-                    modifier = Modifier.fillMaxWidth(),
-                    decorationBox = { inner ->
-                        if (state.location.isEmpty()) {
-                            Text(
-                                "Detecting location…",
-                                style = MaterialTheme.typography.bodyMedium.copy(fontStyle = FontStyle.Italic),
-                                color = MutedStone,
-                                fontSize = 14.sp
-                            )
-                        }
-                        inner()
-                    }
+                // Date and Location Selector
+                SectionLabel(
+                    text = "LOCATION",
+                    icon = Icons.Outlined.LocationOn,
+                    isExpanded = locationExpanded,
+                    onToggle = { locationExpanded = !locationExpanded }
                 )
+                
+                if (locationExpanded) {
+                    Column {
+                        Spacer(Modifier.height(8.dp))
+
+                        Row(modifier = Modifier.fillMaxWidth()) {
+                            ModeButton(
+                                label = "Detect",
+                                icon = Icons.Outlined.MyLocation,
+                                selected = state.locationMode == LocationMode.DETECT,
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                vm.setLocationMode(LocationMode.DETECT); vm.fetchCurrentLocation(
+                                context
+                            )
+                            }
+
+                            Spacer(Modifier.width(8.dp))
+
+                            ModeButton(
+                                label = "Custom",
+                                icon = Icons.Outlined.Edit,
+                                selected = state.locationMode == LocationMode.CUSTOM,
+                                modifier = Modifier.weight(1f)
+                            ) { vm.setLocationMode(LocationMode.CUSTOM) }
+
+                            Spacer(Modifier.width(8.dp))
+
+                            ModeButton(
+                                label = "Map",
+                                icon = Icons.Outlined.Map,
+                                selected = state.locationMode == LocationMode.MAP,
+                                modifier = Modifier.weight(1f)
+                            ) { vm.setLocationMode(LocationMode.MAP) }
+                        }
+
+                        Spacer(Modifier.height(16.dp))
+
+                        // Location Input / Display
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(MutedStone.copy(alpha = 0.05f))
+                                .border(1.dp, MutedStone.copy(alpha = 0.2f), RoundedCornerShape(8.dp))
+                                .padding(16.dp)
+                        ) {
+                            if (state.locationMode == LocationMode.CUSTOM) {
+                                BasicTextField(
+                                    value = state.location,
+                                    onValueChange = vm::onLocationChange,
+                                    textStyle = TextStyle(fontSize = 16.sp, color = InkBlack),
+                                    modifier = Modifier.fillMaxWidth(),
+                                    decorationBox = { innerTextField ->
+                                        if (state.location.isEmpty()) {
+                                            Text(
+                                                "Enter location...",
+                                                color = MutedStone,
+                                                fontSize = 16.sp
+                                            )
+                                        }
+                                        innerTextField()
+                                    }
+                                )
+                            } else {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = state.location.ifBlank { "Detecting..." },
+                                        color = if (state.location.isBlank()) MutedStone else InkBlack,
+                                        fontSize = 16.sp,
+                                        modifier = Modifier.weight(1f)
+                                    )
+                                    if (state.locationMode == LocationMode.MAP) {
+                                        IconButton(
+                                            onClick = { vm.setMapExpanded(true) },
+                                            modifier = Modifier.size(24.dp)
+                                        ) {
+                                            Icon(Icons.Outlined.Fullscreen, null, tint = MutedStone)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        if (state.locationMode == LocationMode.CUSTOM && state.history.isNotEmpty()) {
+                            Spacer(Modifier.height(8.dp))
+                            Text(
+                                "HISTORY",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MutedStone
+                            )
+                            LazyColumn(modifier = Modifier.heightIn(max = 150.dp)) {
+                                items(state.history) { historyLoc ->
+                                    HistoryItem(historyLoc) { vm.onLocationChange(historyLoc) }
+                                }
+                            }
+                        }
+                    }
+                }
 
                 Spacer(Modifier.height(24.dp))
 
+                // Photo Picker
+                SectionLabel(
+                    text = "PHOTO",
+                    icon = Icons.Outlined.Image,
+                    isExpanded = photoExpanded,
+                    onToggle = { photoExpanded = !photoExpanded }
+                )
+                
+                if (photoExpanded) {
+                    Column {
+                        Spacer(Modifier.height(8.dp))
+
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .aspectRatio(4f / 3f)
+                                .shadow(4.dp, RoundedCornerShape(8.dp))
+                                .background(PaperWhite, RoundedCornerShape(8.dp))
+                                .clickable {
+                                    photoPickerLauncher.launch("image/*")
+                                },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            if (state.selectedImageUri != null) {
+                                AsyncImage(
+                                    model = state.selectedImageUri,
+                                    contentDescription = "Selected photo",
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .clip(RoundedCornerShape(8.dp)),
+                                    contentScale = ContentScale.Crop
+                                )
+                                IconButton(
+                                    onClick = { vm.onImageSelected(null) },
+                                    modifier = Modifier
+                                        .align(Alignment.TopEnd)
+                                        .padding(8.dp)
+                                        .background(Color.Black.copy(0.4f), CircleShape)
+                                ) {
+                                    Icon(
+                                        Icons.Outlined.Close,
+                                        null,
+                                        tint = Color.White,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                }
+                            } else {
+                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                    Icon(
+                                        Icons.Outlined.Image,
+                                        null,
+                                        tint = MutedStone,
+                                        modifier = Modifier.size(48.dp)
+                                    )
+                                    Spacer(Modifier.height(12.dp))
+                                    Row {
+                                        TextButton(onClick = { photoPickerLauncher.launch("image/*") }) {
+                                            Icon(Icons.Outlined.Collections, null, Modifier.size(18.dp))
+                                            Spacer(Modifier.width(8.dp))
+                                            Text("Album", color = Color(0xFF4A86E8))
+                                        }
+                                        Spacer(Modifier.width(16.dp))
+                                        TextButton(onClick = {
+                                            val file = File(
+                                                context.cacheDir,
+                                                "temp_image_${System.currentTimeMillis()}.jpg"
+                                            )
+                                            val uri = FileProvider.getUriForFile(
+                                                context,
+                                                "${context.packageName}.provider",
+                                                file
+                                            )
+                                            tempImageUri = uri
+                                            cameraLauncher.launch(uri)
+                                        }) {
+                                            Icon(
+                                                Icons.Outlined.PhotoCamera,
+                                                null,
+                                                Modifier.size(18.dp)
+                                            )
+                                            Spacer(Modifier.width(8.dp))
+                                            Text("Camera", color = Color(0xFF4A86E8))
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                Spacer(Modifier.height(24.dp))
+
+                // Body Input
+                SectionLabel("ENTRY")
+                Spacer(Modifier.height(8.dp))
                 BasicTextField(
                     value = state.body,
                     onValueChange = vm::onBodyChange,
-                    textStyle = MaterialTheme.typography.bodyLarge.copy(color = InkBlack),
-                    modifier = Modifier.fillMaxSize(),
-                    decorationBox = { inner ->
+                    textStyle = TextStyle(
+                        fontSize = 18.sp,
+                        color = InkBlack,
+                        lineHeight = 26.sp,
+                        fontStyle = FontStyle.Italic
+                    ),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
+                    decorationBox = { innerTextField ->
                         if (state.body.isEmpty()) {
                             Text(
-                                "What happened today?",
-                                style = MaterialTheme.typography.bodyLarge.copy(fontStyle = FontStyle.Italic),
-                                color = MutedStone
+                                "Write something...",
+                                style = TextStyle(
+                                    fontSize = 18.sp,
+                                    color = MutedStone,
+                                    fontStyle = FontStyle.Italic
+                                )
                             )
                         }
-                        inner()
+                        innerTextField()
                     }
                 )
             }
         }
+
+        // Full-screen Map Overlay
+        if (state.isMapExpanded) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black)
+            ) {
+                val cameraPositionState = rememberCameraPositionState {
+                    position = CameraPosition.fromLatLngZoom(
+                        LatLng(state.geo?.latitude ?: 0.0, state.geo?.longitude ?: 0.0),
+                        15f
+                    )
+                }
+                GoogleMap(
+                    modifier = Modifier.fillMaxSize(),
+                    cameraPositionState = cameraPositionState,
+                    onMapClick = { vm.onMapClick(it, context) },
+                    uiSettings = MapUiSettings(zoomControlsEnabled = false)
+                ) {
+                    state.geo?.let {
+                        Marker(state = MarkerState(LatLng(it.latitude, it.longitude)))
+                    }
+                }
+                
+                // Custom Zoom Controls (Top Right)
+                Column(
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(top = 110.dp, end = 16.dp)
+                        .background(Color.White.copy(alpha = 0.9f), RoundedCornerShape(24.dp))
+                        .padding(4.dp)
+                ) {
+                    IconButton(onClick = { scope.launch { cameraPositionState.animate(CameraUpdateFactory.zoomIn()) } }) {
+                        Icon(Icons.Outlined.Add, contentDescription = "Zoom In", tint = InkBlack)
+                    }
+                    IconButton(onClick = { scope.launch { cameraPositionState.animate(CameraUpdateFactory.zoomOut()) } }) {
+                        Icon(Icons.Outlined.Remove, contentDescription = "Zoom Out", tint = InkBlack)
+                    }
+                    Spacer(Modifier.height(8.dp))
+                    IconButton(onClick = { 
+                        // Reuse VM logic but also animate camera
+                        vm.fetchCurrentLocation(context)
+                        state.geo?.let {
+                            scope.launch {
+                                cameraPositionState.animate(CameraUpdateFactory.newLatLngZoom(LatLng(it.latitude, it.longitude), 15f))
+                            }
+                        }
+                    }) {
+                        Icon(Icons.Outlined.MyLocation, contentDescription = "My Location", tint = InkBlack)
+                    }
+                }
+                
+                // Overlay controls
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 48.dp, start = 16.dp, end = 16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    IconButton(
+                        onClick = { vm.setMapExpanded(false) },
+                        modifier = Modifier.background(Color.White, RoundedCornerShape(20.dp))
+                    ) {
+                        Icon(Icons.Outlined.Close, contentDescription = "Close", tint = InkBlack)
+                    }
+                    
+                    Box(
+                        modifier = Modifier
+                            .background(Color.White.copy(alpha = 0.9f), RoundedCornerShape(20.dp))
+                            .padding(horizontal = 16.dp, vertical = 8.dp)
+                    ) {
+                        Text(
+                            text = state.location.ifBlank { "Select Location" },
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = InkBlack,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun SectionLabel(
+    text: String,
+    icon: ImageVector? = null,
+    isExpanded: Boolean? = null,
+    onToggle: (() -> Unit)? = null
+) {
+    Row(
+        modifier = if (onToggle != null) {
+            Modifier
+                .clickable(
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = null
+                ) { onToggle() }
+                .fillMaxWidth()
+        } else Modifier,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        if (icon != null) {
+            Icon(icon, null, Modifier.size(14.dp), tint = MutedStone)
+            Spacer(Modifier.width(4.dp))
+        }
+        Text(
+            text = text,
+            style = MaterialTheme.typography.labelMedium,
+            color = MutedStone,
+            letterSpacing = 1.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.weight(1f)
+        )
+        if (isExpanded != null) {
+            Icon(
+                if (isExpanded) Icons.Outlined.ExpandLess else Icons.Outlined.ExpandMore,
+                contentDescription = null,
+                tint = MutedStone,
+                modifier = Modifier.size(20.dp)
+            )
+        }
+    }
+}
+
+@Composable
+fun ModeButton(label: String, icon: ImageVector, selected: Boolean, modifier: Modifier, onClick: () -> Unit) {
+    val contentColor = if (selected) InkBlack else MutedStone
+    val borderColor = if (selected) InkBlack else MutedStone.copy(alpha = 0.3f)
+    
+    Column(
+        modifier = modifier
+            .height(72.dp)
+            .border(1.dp, borderColor, RoundedCornerShape(8.dp))
+            .background(if (selected) MutedStone.copy(alpha = 0.05f) else Color.Transparent)
+            .clickable(onClick = onClick),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Icon(icon, contentDescription = null, tint = contentColor, modifier = Modifier.size(20.dp))
+        Spacer(Modifier.height(4.dp))
+        Text(label, style = TextStyle(fontSize = 13.sp, color = contentColor, fontWeight = FontWeight.Medium))
+    }
+}
+
+@Composable
+fun HistoryItem(text: String, onClick: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(Icons.Outlined.History, null, Modifier.size(16.dp), tint = MutedStone)
+        Spacer(Modifier.width(12.dp))
+        Text(text, style = MaterialTheme.typography.bodyMedium, color = InkBlack)
     }
 }

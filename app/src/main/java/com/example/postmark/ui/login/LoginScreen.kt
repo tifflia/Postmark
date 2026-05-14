@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -90,7 +89,7 @@ fun LoginScreen(
                     onValueChange = vm::onEmailChange,
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
-                    shape = RoundedCornerShape(2.dp),
+                    shape = RoundedCornerShape(8.dp),
                     colors = inkColors()
                 )
                 Spacer(Modifier.height(20.dp))
@@ -102,7 +101,7 @@ fun LoginScreen(
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
                     visualTransformation = PasswordVisualTransformation(),
-                    shape = RoundedCornerShape(2.dp),
+                    shape = RoundedCornerShape(8.dp),
                     colors = inkColors()
                 )
 
@@ -118,7 +117,7 @@ fun LoginScreen(
                         onClick = vm::register,
                         enabled = !state.loading,
                         modifier = Modifier.weight(1f).height(52.dp),
-                        shape = RoundedCornerShape(2.dp),
+                        shape = RoundedCornerShape(8.dp),
                         contentPadding = PaddingValues()
                     ) {
                         Text("REGISTER", letterSpacing = 2.sp, fontSize = 13.sp)
@@ -127,7 +126,7 @@ fun LoginScreen(
                         onClick = vm::login,
                         enabled = !state.loading,
                         modifier = Modifier.weight(1f).height(52.dp),
-                        shape = RoundedCornerShape(2.dp),
+                        shape = RoundedCornerShape(8.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = InkBlack, contentColor = Parchment),
                         contentPadding = PaddingValues()
                     ) {

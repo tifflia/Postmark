@@ -3,10 +3,18 @@ package com.example.postmark.data
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
+import com.google.firebase.storage.FirebaseStorage
+import android.net.Uri
+import io.github.jan.supabase.createSupabaseClient
+import io.github.jan.supabase.storage.Storage
+import io.github.jan.supabase.storage.storage
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withContext
+import java.util.UUID
 
 /**
  * Firestore reads/writes for journal entries.
@@ -22,6 +30,14 @@ import kotlinx.coroutines.tasks.await
 class EntryRepository {
     private val db = FirebaseFirestore.getInstance()
     private val auth = FirebaseAuth.getInstance()
+//    private val storage = FirebaseStorage.getInstance()
+
+    val supabase = createSupabaseClient(
+        supabaseUrl = "https://rebbansdrlkzbgndhobe.supabase.co",
+        supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJlYmJhbnNkcmxremJnbmRob2JlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NjY3NDcsImV4cCI6MjA5NDI0Mjc0N30.r1CoFxjaLUUPTvTY5axaEXfudKXm4WPirgBGrB4AUUs"
+    ) {
+        install(Storage)
+    }
 
     private fun entriesRef() = auth.currentUser?.uid?.let { uid ->
         db.collection("users").document(uid).collection("entries")
@@ -44,6 +60,27 @@ class EntryRepository {
     suspend fun add(entry: Entry): String {
         val ref = entriesRef().add(entry).await()
         return ref.id
+    }
+
+    suspend fun uploadPhoto(uri: Uri, contentResolver: android.content.ContentResolver): String = withContext(Dispatchers.IO) {
+        val uid = auth.currentUser?.uid ?: throw IllegalStateException("Not signed in")
+        val name = "${UUID.randomUUID()}.jpg"
+//        val ref = storage.reference.child("photos/$uid/$name")
+        val path = "photos/$uid/$name"
+
+        val bytes = contentResolver.openInputStream(uri)?.use { it.readBytes() }
+            ?: throw IllegalStateException("Could not read image bytes")
+
+//        ref.putBytes(bytes).await()
+//        ref.downloadUrl.await().toString()
+
+        supabase.storage
+            .from("photos")
+            .upload(path, bytes, upsert = false)
+
+        supabase.storage
+            .from("photos")
+            .publicUrl(path)
     }
 
     suspend fun delete(entryId: String) {

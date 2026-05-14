@@ -22,7 +22,6 @@ fun PostmarkOverflowMenu(
     onDismiss: () -> Unit,
     isOnListView: Boolean,
     onSwitchView: () -> Unit,
-    onFilter: () -> Unit,
     onDeleteAll: () -> Unit,
     onSignOut: (() -> Unit)? = null
 ) {
@@ -33,7 +32,6 @@ fun PostmarkOverflowMenu(
             text = { Text(if (isOnListView) "Map View" else "List View") },
             onClick = { onDismiss(); onSwitchView() }
         )
-        DropdownMenuItem(text = { Text("Filter") }, onClick = { onDismiss(); onFilter() })
         DropdownMenuItem(
             text = { Text("Delete All", color = MaterialTheme.colorScheme.secondary) },
             onClick = { onDismiss(); confirmDelete = true }
