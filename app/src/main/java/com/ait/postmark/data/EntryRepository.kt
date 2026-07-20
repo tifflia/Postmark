@@ -1,4 +1,4 @@
-package com.example.postmark.data
+package com.ait.postmark.data
 
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore

@@ -1,9 +1,9 @@
-package com.example.postmark.ui.list
+package com.ait.postmark.ui.list
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.postmark.data.Entry
-import com.example.postmark.data.EntryRepository
+import com.ait.postmark.data.Entry
+import com.ait.postmark.data.EntryRepository
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch

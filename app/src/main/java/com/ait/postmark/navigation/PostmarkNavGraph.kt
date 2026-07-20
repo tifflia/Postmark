@@ -1,4 +1,4 @@
-package com.example.postmark.navigation
+package com.ait.postmark.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -7,12 +7,12 @@ import androidx.compose.runtime.remember
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.postmark.auth.AuthRepository
-import com.example.postmark.ui.entry.EntryDetailScreen
-import com.example.postmark.ui.entry.NewEntryScreen
-import com.example.postmark.ui.list.ListScreen
-import com.example.postmark.ui.login.LoginScreen
-import com.example.postmark.ui.map.MapScreen
+import com.ait.postmark.auth.AuthRepository
+import com.ait.postmark.ui.entry.EntryDetailScreen
+import com.ait.postmark.ui.entry.NewEntryScreen
+import com.ait.postmark.ui.list.ListScreen
+import com.ait.postmark.ui.login.LoginScreen
+import com.ait.postmark.ui.map.MapScreen
 
 object Routes {
     const val LOGIN = "login"

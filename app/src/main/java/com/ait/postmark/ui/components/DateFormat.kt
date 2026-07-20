@@ -1,4 +1,4 @@
-package com.example.postmark.ui.components
+package com.ait.postmark.ui.components
 
 import java.text.SimpleDateFormat
 import java.util.Locale

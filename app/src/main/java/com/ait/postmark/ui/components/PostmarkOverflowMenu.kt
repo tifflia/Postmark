@@ -1,4 +1,4 @@
-package com.example.postmark.ui.components
+package com.ait.postmark.ui.components
 
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
@@ -12,7 +12,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
-import com.example.postmark.R
+import com.ait.postmark.R
 
 /**
  * The dropdown shown when the hamburger icon is tapped on List and Map views.

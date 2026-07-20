@@ -1,4 +1,4 @@
-package com.example.postmark.ui.theme
+package com.ait.postmark.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

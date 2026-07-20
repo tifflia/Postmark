@@ -1,4 +1,4 @@
-package com.example.postmark
+package com.ait.postmark
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -7,9 +7,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
-import com.example.postmark.navigation.PostmarkNavGraph
-import com.example.postmark.ui.theme.Parchment
-import com.example.postmark.ui.theme.PostmarkTheme
+import com.ait.postmark.navigation.PostmarkNavGraph
+import com.ait.postmark.ui.theme.Parchment
+import com.ait.postmark.ui.theme.PostmarkTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

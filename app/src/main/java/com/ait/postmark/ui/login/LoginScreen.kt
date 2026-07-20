@@ -1,4 +1,4 @@
-package com.example.postmark.ui.login
+package com.ait.postmark.ui.login
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
@@ -39,11 +39,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.postmark.R
-import com.example.postmark.ui.theme.InkBlack
-import com.example.postmark.ui.theme.MutedStone
-import com.example.postmark.ui.theme.Parchment
-import com.example.postmark.ui.theme.ParchmentDark
+import com.ait.postmark.R
+import com.ait.postmark.ui.theme.InkBlack
+import com.ait.postmark.ui.theme.MutedStone
+import com.ait.postmark.ui.theme.Parchment
+import com.ait.postmark.ui.theme.ParchmentDark
 
 @Composable
 fun LoginScreen(

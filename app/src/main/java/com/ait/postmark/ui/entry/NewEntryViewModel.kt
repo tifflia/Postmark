@@ -1,4 +1,4 @@
-package com.example.postmark.ui.entry
+package com.ait.postmark.ui.entry
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -8,8 +8,8 @@ import android.net.Uri
 import android.os.Build
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.postmark.data.Entry
-import com.example.postmark.data.EntryRepository
+import com.ait.postmark.data.Entry
+import com.ait.postmark.data.EntryRepository
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 import com.google.android.gms.tasks.CancellationTokenSource

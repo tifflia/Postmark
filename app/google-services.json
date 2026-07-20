@@ -9,7 +9,7 @@
       "client_info": {
         "mobilesdk_app_id": "1:1064880005469:android:8fa44d9dc2b34ffa8648b4",
         "android_client_info": {
-          "package_name": "com.example.postmark"
+          "package_name": "com.ait.postmark"
         }
       },
       "oauth_client": [],

@@ -3,14 +3,15 @@ plugins {
     id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.compose")
     id("com.google.gms.google-services")
+    id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
 }
 
 android {
-    namespace = "com.example.postmark"
+    namespace = "com.ait.postmark"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.example.postmark"
+        applicationId = "com.ait.postmark"
         minSdk = 26
         targetSdk = 35
         versionCode = 1

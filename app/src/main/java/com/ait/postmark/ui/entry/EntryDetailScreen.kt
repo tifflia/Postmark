@@ -1,4 +1,4 @@
-package com.example.postmark.ui.entry
+package com.ait.postmark.ui.entry
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -41,13 +41,13 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
-import com.example.postmark.R
-import com.example.postmark.ui.components.formatIsoDate
-import com.example.postmark.ui.list.EntriesViewModel
-import com.example.postmark.ui.theme.InkBlack
-import com.example.postmark.ui.theme.MutedStone
-import com.example.postmark.ui.theme.Parchment
-import com.example.postmark.ui.theme.PaperWhite
+import com.ait.postmark.R
+import com.ait.postmark.ui.components.formatIsoDate
+import com.ait.postmark.ui.list.EntriesViewModel
+import com.ait.postmark.ui.theme.InkBlack
+import com.ait.postmark.ui.theme.MutedStone
+import com.ait.postmark.ui.theme.Parchment
+import com.ait.postmark.ui.theme.PaperWhite
 
 @Composable
 fun EntryDetailScreen(

@@ -5,7 +5,7 @@ A travel journal Android app built with Jetpack Compose, Firebase, and Google Ma
 ## Project structure
 
 ```
-app/src/main/java/com/example/postmark/
+app/src/main/java/com/ait/postmark/
 ├── MainActivity.kt              # entry point
 ├── auth/
 │   └── AuthRepository.kt        # Firebase Auth wrapper

@@ -1,4 +1,4 @@
-package com.example.postmark.ui.list
+package com.ait.postmark.ui.list
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -43,15 +43,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
-import com.example.postmark.R
-import com.example.postmark.auth.AuthRepository
-import com.example.postmark.data.Entry
-import com.example.postmark.ui.components.PostmarkOverflowMenu
-import com.example.postmark.ui.components.formatIsoDate
-import com.example.postmark.ui.theme.InkBlack
-import com.example.postmark.ui.theme.MutedStone
-import com.example.postmark.ui.theme.Parchment
-import com.example.postmark.ui.theme.PaperWhite
+import com.ait.postmark.R
+import com.ait.postmark.auth.AuthRepository
+import com.ait.postmark.data.Entry
+import com.ait.postmark.ui.components.PostmarkOverflowMenu
+import com.ait.postmark.ui.components.formatIsoDate
+import com.ait.postmark.ui.theme.InkBlack
+import com.ait.postmark.ui.theme.MutedStone
+import com.ait.postmark.ui.theme.Parchment
+import com.ait.postmark.ui.theme.PaperWhite
 
 @Composable
 fun ListScreen(

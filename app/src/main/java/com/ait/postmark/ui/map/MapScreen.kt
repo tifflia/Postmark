@@ -1,4 +1,4 @@
-package com.example.postmark.ui.map
+package com.ait.postmark.ui.map
 
 import android.Manifest
 import android.annotation.SuppressLint
@@ -44,12 +44,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.postmark.R
-import com.example.postmark.ui.components.PostmarkOverflowMenu
-import com.example.postmark.ui.list.EntriesViewModel
-import com.example.postmark.ui.theme.InkBlack
-import com.example.postmark.ui.theme.MutedStone
-import com.example.postmark.ui.theme.Parchment
+import com.ait.postmark.R
+import com.ait.postmark.ui.components.PostmarkOverflowMenu
+import com.ait.postmark.ui.list.EntriesViewModel
+import com.ait.postmark.ui.theme.InkBlack
+import com.ait.postmark.ui.theme.MutedStone
+import com.ait.postmark.ui.theme.Parchment
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 import com.google.android.gms.maps.CameraUpdateFactory
