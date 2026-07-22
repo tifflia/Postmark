@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "1064880005469",
-    "project_id": "postmark-try",
-    "storage_bucket": "postmark-try.firebasestorage.app"
+    "project_number": "YOUR_PROJECT_NUMBER",
+    "project_id": "YOUR_PROJECT_ID",
+    "storage_bucket": "YOUR_PROJECT_ID.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:1064880005469:android:8fa44d9dc2b34ffa8648b4",
+        "mobilesdk_app_id": "YOUR_MOBILE_SDK_APP_ID",
         "android_client_info": {
           "package_name": "com.ait.postmark"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyDjQivBCMzEju8-wPthasPwwa3b3txeKQ8"
+          "current_key": "YOUR_API_KEY"
         }
       ],
       "services": {

@@ -1,5 +1,6 @@
 package com.ait.postmark.data
 
+import com.ait.postmark.BuildConfig
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
@@ -24,8 +25,8 @@ class EntryRepository {
     private val auth = FirebaseAuth.getInstance()
 
     val supabase = createSupabaseClient(
-        supabaseUrl = "https://rebbansdrlkzbgndhobe.supabase.co",
-        supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJlYmJhbnNkcmxremJnbmRob2JlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NjY3NDcsImV4cCI6MjA5NDI0Mjc0N30.r1CoFxjaLUUPTvTY5axaEXfudKXm4WPirgBGrB4AUUs"
+        supabaseUrl = BuildConfig.SUPABASE_URL,
+        supabaseKey = BuildConfig.SUPABASE_KEY
     ) {
         install(Storage)
     }
