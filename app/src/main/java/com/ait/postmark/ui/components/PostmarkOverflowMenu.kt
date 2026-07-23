@@ -21,8 +21,6 @@ import com.ait.postmark.R
 fun PostmarkOverflowMenu(
     expanded: Boolean,
     onDismiss: () -> Unit,
-    isOnListView: Boolean,
-    onSwitchView: () -> Unit,
     onDeleteAll: () -> Unit,
     onSignOut: (() -> Unit)? = null
 ) {
@@ -30,15 +28,14 @@ fun PostmarkOverflowMenu(
 
     DropdownMenu(expanded = expanded, onDismissRequest = onDismiss) {
         DropdownMenuItem(
-            text = { Text(if (isOnListView) stringResource(R.string.map_view) else stringResource(R.string.list_view)) },
-            onClick = { onDismiss(); onSwitchView() }
-        )
-        DropdownMenuItem(
             text = { Text(stringResource(R.string.delete_all), color = MaterialTheme.colorScheme.secondary) },
             onClick = { onDismiss(); confirmDelete = true }
         )
         if (onSignOut != null) {
-            DropdownMenuItem(text = { Text(stringResource(R.string.sign_out)) }, onClick = { onDismiss(); onSignOut() })
+            DropdownMenuItem(
+                text = { Text(stringResource(R.string.sign_out)) },
+                onClick = { onDismiss(); onSignOut() }
+            )
         }
     }
 

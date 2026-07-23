@@ -20,6 +20,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material.icons.outlined.Menu
+import androidx.compose.material.icons.outlined.Map
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -84,18 +85,21 @@ fun ListScreen(
                     Spacer(Modifier.height(4.dp))
                     Text(user?.displayName ?: stringResource(R.string.name_default), style = MaterialTheme.typography.headlineLarge, color = InkBlack)
                 }
-                Box {
-                    IconButton(onClick = { menuOpen = true }) {
-                        Icon(Icons.Outlined.Menu, contentDescription = stringResource(R.string.menu_desc), tint = InkBlack)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    IconButton(onClick = onSwitchToMap) {
+                        Icon(Icons.Outlined.Map, contentDescription = "Switch to Map", tint = InkBlack)
                     }
-                    PostmarkOverflowMenu(
-                        expanded = menuOpen,
-                        onDismiss = { menuOpen = false },
-                        isOnListView = true,
-                        onSwitchView = onSwitchToMap,
-                        onDeleteAll = { vm.deleteAll() },
-                        onSignOut = onSignOut
-                    )
+                    Box {
+                        IconButton(onClick = { menuOpen = true }) {
+                            Icon(Icons.Outlined.Menu, contentDescription = stringResource(R.string.menu_desc), tint = InkBlack)
+                        }
+                        PostmarkOverflowMenu(
+                            expanded = menuOpen,
+                            onDismiss = { menuOpen = false },
+                            onDeleteAll = { vm.deleteAll() },
+                            onSignOut = onSignOut
+                        )
+                    }
                 }
             }
 

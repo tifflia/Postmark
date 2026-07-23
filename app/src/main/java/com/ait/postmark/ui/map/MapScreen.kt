@@ -19,6 +19,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.Book
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Menu
 import androidx.compose.material.icons.outlined.MyLocation
@@ -129,17 +130,20 @@ fun MapScreen(
                         color = InkBlack
                     )
                 }
-                Box {
-                    IconButton(onClick = { menuOpen = true }) {
-                        Icon(Icons.Outlined.Menu, contentDescription = stringResource(R.string.menu_desc), tint = InkBlack)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    IconButton(onClick = onSwitchToList) {
+                        Icon(Icons.Outlined.Book, contentDescription = "Switch to List", tint = InkBlack)
                     }
-                    PostmarkOverflowMenu(
-                        expanded = menuOpen,
-                        onDismiss = { menuOpen = false },
-                        isOnListView = false,
-                        onSwitchView = onSwitchToList,
-                        onDeleteAll = { vm.deleteAll() }
-                    )
+                    Box {
+                        IconButton(onClick = { menuOpen = true }) {
+                            Icon(Icons.Outlined.Menu, contentDescription = stringResource(R.string.menu_desc), tint = InkBlack)
+                        }
+                        PostmarkOverflowMenu(
+                            expanded = menuOpen,
+                            onDismiss = { menuOpen = false },
+                            onDeleteAll = { vm.deleteAll() }
+                        )
+                    }
                 }
             }
 
