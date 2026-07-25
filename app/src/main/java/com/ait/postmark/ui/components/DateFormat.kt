@@ -1,7 +1,9 @@
 package com.ait.postmark.ui.components
 
 import java.text.SimpleDateFormat
+import java.util.Date
 import java.util.Locale
+import java.util.TimeZone
 
 /** Turns "2026-04-14" into "April 14, 2026". */
 fun formatIsoDate(iso: String): String = try {
@@ -10,4 +12,24 @@ fun formatIsoDate(iso: String): String = try {
     formatter.format(parser.parse(iso)!!)
 } catch (e: Exception) {
     iso
+}
+
+private fun utcIsoFormatter() = SimpleDateFormat("yyyy-MM-dd", Locale.US).apply {
+    timeZone = TimeZone.getTimeZone("UTC")
+}
+
+/**
+ * Converts a UTC epoch-millis value (as produced by Material's date pickers)
+ * into an ISO "yyyy-MM-dd" string.
+ */
+fun isoFromUtcMillis(millis: Long): String = utcIsoFormatter().format(Date(millis))
+
+/**
+ * Converts an ISO "yyyy-MM-dd" string into UTC epoch millis for pre-selecting
+ * a date picker, or null if it can't be parsed.
+ */
+fun utcMillisFromIso(iso: String): Long? = try {
+    utcIsoFormatter().parse(iso)?.time
+} catch (e: Exception) {
+    null
 }

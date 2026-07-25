@@ -42,6 +42,10 @@
     <string name="latest_entries">LATEST ENTRIES</string>
     <string name="no_entries_yet">No entries yet.</string>
     <string name="no_entries_yet_subtext">Tap the pencil to write your first.</string>
+    <string name="no_entries_in_range">No entries in this range.</string>
+    <string name="no_entries_in_range_subtext">Try widening your date filter.</string>
+    <string name="filter_by_date_desc">Filter by date</string>
+    <string name="clear_filter_desc">Clear date filter</string>
     <string name="new_entry_desc">New entry</string>
     <string name="arrow_btn">→</string>
     <string name="par_avion">PAR AVION</string>

@@ -18,6 +18,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.DateRange
 import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material.icons.outlined.Menu
 import androidx.compose.material.icons.outlined.Map
@@ -47,8 +49,10 @@ import coil.compose.AsyncImage
 import com.ait.postmark.R
 import com.ait.postmark.auth.AuthRepository
 import com.ait.postmark.data.Entry
+import com.ait.postmark.ui.components.DateRangeFilterDialog
 import com.ait.postmark.ui.components.PostmarkOverflowMenu
 import com.ait.postmark.ui.components.formatIsoDate
+import com.ait.postmark.ui.components.utcMillisFromIso
 import com.ait.postmark.ui.theme.InkBlack
 import com.ait.postmark.ui.theme.MutedStone
 import com.ait.postmark.ui.theme.Parchment
@@ -64,8 +68,24 @@ fun ListScreen(
     auth: AuthRepository = AuthRepository()
 ) {
     val entries by vm.entries.collectAsState()
+    val startDate by vm.startDate.collectAsState()
+    val endDate by vm.endDate.collectAsState()
+    val filterActive by vm.isFilterActive.collectAsState()
     var menuOpen by remember { mutableStateOf(false) }
+    var filterOpen by remember { mutableStateOf(false) }
     val user = auth.currentUser
+
+    if (filterOpen) {
+        DateRangeFilterDialog(
+            initialStartMillis = startDate?.let { utcMillisFromIso(it) },
+            initialEndMillis = endDate?.let { utcMillisFromIso(it) },
+            onDismiss = { filterOpen = false },
+            onConfirm = { start, end ->
+                vm.setDateRange(start, end)
+                filterOpen = false
+            }
+        )
+    }
 
     Box(modifier = Modifier
         .fillMaxSize()
@@ -86,6 +106,13 @@ fun ListScreen(
                     Text(user?.displayName ?: stringResource(R.string.name_default), style = MaterialTheme.typography.headlineLarge, color = InkBlack)
                 }
                 Row(verticalAlignment = Alignment.CenterVertically) {
+                    IconButton(onClick = { filterOpen = true }) {
+                        Icon(
+                            Icons.Outlined.DateRange,
+                            contentDescription = stringResource(R.string.filter_by_date_desc),
+                            tint = if (filterActive) InkBlack else MutedStone
+                        )
+                    }
                     IconButton(onClick = onSwitchToMap) {
                         Icon(Icons.Outlined.Map, contentDescription = "Switch to Map", tint = InkBlack)
                     }
@@ -113,6 +140,31 @@ fun ListScreen(
                     .background(MutedStone))
             }
 
+            if (filterActive) {
+                Spacer(Modifier.height(12.dp))
+                Row(
+                    modifier = Modifier
+                        .padding(horizontal = 24.dp)
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(PaperWhite)
+                        .clickable { filterOpen = true }
+                        .padding(start = 12.dp, end = 4.dp, top = 4.dp, bottom = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(Icons.Outlined.DateRange, contentDescription = null, tint = MutedStone, modifier = Modifier.size(16.dp))
+                    Spacer(Modifier.size(6.dp))
+                    Text(
+                        dateRangeLabel(startDate, endDate),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = InkBlack,
+                        fontSize = 13.sp
+                    )
+                    IconButton(onClick = { vm.clearDateRange() }, modifier = Modifier.size(28.dp)) {
+                        Icon(Icons.Outlined.Close, contentDescription = stringResource(R.string.clear_filter_desc), tint = MutedStone, modifier = Modifier.size(16.dp))
+                    }
+                }
+            }
+
             Spacer(Modifier.height(12.dp))
 
             if (entries.isEmpty()) {
@@ -121,13 +173,13 @@ fun ListScreen(
                     .padding(top = 80.dp), contentAlignment = Alignment.TopCenter) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(
-                            stringResource(R.string.no_entries_yet),
+                            stringResource(if (filterActive) R.string.no_entries_in_range else R.string.no_entries_yet),
                             style = MaterialTheme.typography.bodyLarge.copy(fontStyle = FontStyle.Italic),
                             color = MutedStone
                         )
                         Spacer(Modifier.height(8.dp))
                         Text(
-                            stringResource(R.string.no_entries_yet_subtext),
+                            stringResource(if (filterActive) R.string.no_entries_in_range_subtext else R.string.no_entries_yet_subtext),
                             style = MaterialTheme.typography.bodyMedium.copy(fontStyle = FontStyle.Italic),
                             color = MutedStone
                         )
@@ -161,6 +213,14 @@ fun ListScreen(
             Icon(Icons.Outlined.Edit, contentDescription = stringResource(R.string.new_entry_desc))
         }
     }
+}
+
+/** Human-readable summary of the active date range for the filter chip. */
+private fun dateRangeLabel(start: String?, end: String?): String = when {
+    start != null && end != null -> "${formatIsoDate(start)} – ${formatIsoDate(end)}"
+    start != null -> "From ${formatIsoDate(start)}"
+    end != null -> "Until ${formatIsoDate(end)}"
+    else -> ""
 }
 
 @Composable
