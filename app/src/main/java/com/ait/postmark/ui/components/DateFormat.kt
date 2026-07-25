@@ -33,3 +33,11 @@ fun utcMillisFromIso(iso: String): Long? = try {
 } catch (e: Exception) {
     null
 }
+
+/** Human-readable summary of a date range for the filter chip. */
+fun formatDateRange(start: String?, end: String?): String = when {
+    start != null && end != null -> "${formatIsoDate(start)} – ${formatIsoDate(end)}"
+    start != null -> "From ${formatIsoDate(start)}"
+    end != null -> "Until ${formatIsoDate(end)}"
+    else -> ""
+}

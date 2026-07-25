@@ -5,6 +5,7 @@ import android.annotation.SuppressLint
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,6 +21,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Book
+import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.DateRange
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Menu
 import androidx.compose.material.icons.outlined.MyLocation
@@ -44,13 +47,18 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ait.postmark.R
+import com.ait.postmark.ui.components.DateRangeFilterDialog
 import com.ait.postmark.ui.components.PostmarkOverflowMenu
+import com.ait.postmark.ui.components.formatDateRange
+import com.ait.postmark.ui.components.utcMillisFromIso
 import com.ait.postmark.ui.list.EntriesViewModel
 import com.ait.postmark.ui.theme.InkBlack
 import com.ait.postmark.ui.theme.MutedStone
 import com.ait.postmark.ui.theme.Parchment
+import com.ait.postmark.ui.theme.PaperWhite
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -74,9 +82,25 @@ fun MapScreen(
     vm: EntriesViewModel = viewModel()
 ) {
     val entries by vm.entries.collectAsState()
+    val startDate by vm.startDate.collectAsState()
+    val endDate by vm.endDate.collectAsState()
+    val filterActive by vm.isFilterActive.collectAsState()
     var menuOpen by remember { mutableStateOf(false) }
+    var filterOpen by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
+
+    if (filterOpen) {
+        DateRangeFilterDialog(
+            initialStartMillis = startDate?.let { utcMillisFromIso(it) },
+            initialEndMillis = endDate?.let { utcMillisFromIso(it) },
+            onDismiss = { filterOpen = false },
+            onConfirm = { start, end ->
+                vm.setDateRange(start, end)
+                filterOpen = false
+            }
+        )
+    }
 
     val locationPermission = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -131,6 +155,13 @@ fun MapScreen(
                     )
                 }
                 Row(verticalAlignment = Alignment.CenterVertically) {
+                    IconButton(onClick = { filterOpen = true }) {
+                        Icon(
+                            Icons.Outlined.DateRange,
+                            contentDescription = stringResource(R.string.filter_by_date_desc),
+                            tint = if (filterActive) InkBlack else MutedStone
+                        )
+                    }
                     IconButton(onClick = onSwitchToList) {
                         Icon(Icons.Outlined.Book, contentDescription = "Switch to List", tint = InkBlack)
                     }
@@ -143,6 +174,30 @@ fun MapScreen(
                             onDismiss = { menuOpen = false },
                             onDeleteAll = { vm.deleteAll() }
                         )
+                    }
+                }
+            }
+
+            if (filterActive) {
+                Row(
+                    modifier = Modifier
+                        .padding(start = 24.dp, end = 24.dp, bottom = 4.dp)
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(PaperWhite)
+                        .clickable { filterOpen = true }
+                        .padding(start = 12.dp, end = 4.dp, top = 4.dp, bottom = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(Icons.Outlined.DateRange, contentDescription = null, tint = MutedStone, modifier = Modifier.size(16.dp))
+                    Spacer(Modifier.size(6.dp))
+                    Text(
+                        formatDateRange(startDate, endDate),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = InkBlack,
+                        fontSize = 13.sp
+                    )
+                    IconButton(onClick = { vm.clearDateRange() }, modifier = Modifier.size(28.dp)) {
+                        Icon(Icons.Outlined.Close, contentDescription = stringResource(R.string.clear_filter_desc), tint = MutedStone, modifier = Modifier.size(16.dp))
                     }
                 }
             }

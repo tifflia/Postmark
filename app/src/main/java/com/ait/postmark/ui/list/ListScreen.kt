@@ -51,6 +51,7 @@ import com.ait.postmark.auth.AuthRepository
 import com.ait.postmark.data.Entry
 import com.ait.postmark.ui.components.DateRangeFilterDialog
 import com.ait.postmark.ui.components.PostmarkOverflowMenu
+import com.ait.postmark.ui.components.formatDateRange
 import com.ait.postmark.ui.components.formatIsoDate
 import com.ait.postmark.ui.components.utcMillisFromIso
 import com.ait.postmark.ui.theme.InkBlack
@@ -154,7 +155,7 @@ fun ListScreen(
                     Icon(Icons.Outlined.DateRange, contentDescription = null, tint = MutedStone, modifier = Modifier.size(16.dp))
                     Spacer(Modifier.size(6.dp))
                     Text(
-                        dateRangeLabel(startDate, endDate),
+                        formatDateRange(startDate, endDate),
                         style = MaterialTheme.typography.bodyMedium,
                         color = InkBlack,
                         fontSize = 13.sp
@@ -213,14 +214,6 @@ fun ListScreen(
             Icon(Icons.Outlined.Edit, contentDescription = stringResource(R.string.new_entry_desc))
         }
     }
-}
-
-/** Human-readable summary of the active date range for the filter chip. */
-private fun dateRangeLabel(start: String?, end: String?): String = when {
-    start != null && end != null -> "${formatIsoDate(start)} – ${formatIsoDate(end)}"
-    start != null -> "From ${formatIsoDate(start)}"
-    end != null -> "Until ${formatIsoDate(end)}"
-    else -> ""
 }
 
 @Composable

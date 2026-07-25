@@ -4,12 +4,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.ait.postmark.auth.AuthRepository
 import com.ait.postmark.ui.entry.EntryDetailScreen
 import com.ait.postmark.ui.entry.NewEntryScreen
+import com.ait.postmark.ui.list.EntriesViewModel
 import com.ait.postmark.ui.list.ListScreen
 import com.ait.postmark.ui.login.LoginScreen
 import com.ait.postmark.ui.map.MapScreen
@@ -28,6 +30,11 @@ fun PostmarkNavGraph(authRepo: AuthRepository = remember { AuthRepository() }) {
     val navController = rememberNavController()
     val user by authRepo.authState.collectAsState(initial = authRepo.currentUser)
 
+    // One ViewModel shared by the list and map so a date filter applied in one
+    // view carries over to the other. Scoped to the host (the activity), it
+    // survives list<->map switches and rotation, and resets on a cold start.
+    val entriesVm: EntriesViewModel = viewModel()
+
     // The start destination depends on whether we have a logged-in user.
     // Firebase Auth restores the session from disk on app launch.
     val start = if (user != null) Routes.LIST else Routes.LOGIN
@@ -42,10 +49,12 @@ fun PostmarkNavGraph(authRepo: AuthRepository = remember { AuthRepository() }) {
         }
         composable(Routes.LIST) {
             ListScreen(
+                vm = entriesVm,
                 onOpenEntry = { id -> navController.navigate(Routes.entryDetail(id)) },
                 onNewEntry = { navController.navigate(Routes.NEW_ENTRY) },
                 onSwitchToMap = { navController.navigate(Routes.MAP) { popUpTo(Routes.LIST) { inclusive = true } } },
                 onSignOut = {
+                    entriesVm.clearDateRange()
                     authRepo.signOut()
                     navController.navigate(Routes.LOGIN) { popUpTo(0) }
                 }
@@ -53,6 +62,7 @@ fun PostmarkNavGraph(authRepo: AuthRepository = remember { AuthRepository() }) {
         }
         composable(Routes.MAP) {
             MapScreen(
+                vm = entriesVm,
                 onOpenEntry = { id -> navController.navigate(Routes.entryDetail(id)) },
                 onNewEntry = { navController.navigate(Routes.NEW_ENTRY) },
                 onSwitchToList = { navController.navigate(Routes.LIST) { popUpTo(Routes.MAP) { inclusive = true } } }
