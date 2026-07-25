@@ -10,6 +10,7 @@ data class Entry(
     var location: String = "",        // "City, Country"
     var geo: GeoPoint? = null,        // For the map view
     var body: String = "",
-    var photoUrl: String? = null,
+    var photoUrl: String? = null,     // Public Supabase URL for display
+    var photoPath: String? = null,    // Storage path ("uid/name.jpg") for deletion; null on legacy entries
     @ServerTimestamp var createdAt: Date? = null
 )

@@ -38,6 +38,7 @@ data class NewEntryUiState(
     val history: List<String> = emptyList(),
     val selectedImageUri: Uri? = null,
     val existingPhotoUrl: String? = null,
+    val existingPhotoPath: String? = null,
     val editingId: String? = null,
     val isMapExpanded: Boolean = false,
     val saving: Boolean = false,
@@ -71,6 +72,10 @@ class NewEntryViewModel(
     }
 
     private var loadedForEdit = false
+    // The photo the entry had when we opened it, so we can delete it from
+    // storage if the user replaces or removes it on save.
+    private var originalPhotoUrl: String? = null
+    private var originalPhotoPath: String? = null
 
     /**
      * Loads an existing entry into the form so it can be edited. Populates the
@@ -87,6 +92,8 @@ class NewEntryViewModel(
                     // holds the entry, ignore later updates so edits aren't clobbered.
                     if (_state.value.editingId != null) return@collect
                     val e = entries.firstOrNull { it.id == entryId } ?: return@collect
+                    originalPhotoUrl = e.photoUrl
+                    originalPhotoPath = e.photoPath
                     _state.update {
                         it.copy(
                             editingId = e.id,
@@ -95,6 +102,7 @@ class NewEntryViewModel(
                             geo = e.geo,
                             body = e.body,
                             existingPhotoUrl = e.photoUrl,
+                            existingPhotoPath = e.photoPath,
                             // Preserve the original location intent: an entry with
                             // coordinates keeps its pin; otherwise treat it as custom.
                             locationMode = if (e.geo != null) LocationMode.MAP else LocationMode.CUSTOM
@@ -112,7 +120,9 @@ class NewEntryViewModel(
     fun onImageSelected(uri: Uri?) = _state.update { it.copy(selectedImageUri = uri) }
 
     /** Clears both a freshly picked photo and any existing one on an edited entry. */
-    fun onImageRemoved() = _state.update { it.copy(selectedImageUri = null, existingPhotoUrl = null) }
+    fun onImageRemoved() = _state.update {
+        it.copy(selectedImageUri = null, existingPhotoUrl = null, existingPhotoPath = null)
+    }
 
     fun setLocationMode(mode: LocationMode) {
         _state.update { it.copy(locationMode = mode) }
@@ -212,9 +222,11 @@ class NewEntryViewModel(
             try {
                 // Upload a newly picked photo; otherwise keep whatever the entry
                 // already had (null once the user removes it).
-                val photoUrl = s.selectedImageUri?.let { uri ->
+                val uploaded = s.selectedImageUri?.let { uri ->
                     repo.uploadPhoto(uri, contentResolver)
-                } ?: s.existingPhotoUrl
+                }
+                val photoUrl = uploaded?.url ?: s.existingPhotoUrl
+                val photoPath = uploaded?.path ?: s.existingPhotoPath
 
                 // In CUSTOM mode, we intentionally drop the GeoPoint
                 val finalGeo = if (s.locationMode == LocationMode.CUSTOM) null else s.geo
@@ -225,10 +237,18 @@ class NewEntryViewModel(
                     location = s.location.trim(),
                     geo = finalGeo,
                     body = s.body.trim(),
-                    photoUrl = photoUrl
+                    photoUrl = photoUrl,
+                    photoPath = photoPath
                 )
 
                 if (s.isEditing) repo.update(entry) else repo.add(entry)
+
+                // If editing replaced or removed the original photo, reclaim it
+                // from storage now that the entry no longer references it.
+                if (s.isEditing && originalPhotoUrl != null && originalPhotoUrl != photoUrl) {
+                    repo.deleteStoredPhoto(originalPhotoPath, originalPhotoUrl)
+                }
+
                 _state.update { it.copy(saving = false, saved = true) }
             } catch (e: Exception) {
                 // Handle upload or save error
