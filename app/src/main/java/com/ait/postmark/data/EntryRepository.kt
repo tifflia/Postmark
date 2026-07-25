@@ -54,6 +54,22 @@ class EntryRepository {
         return ref.id
     }
 
+    /**
+     * Updates the editable fields of an existing entry. Uses a field map rather
+     * than set() so the server-managed createdAt timestamp is left untouched.
+     */
+    suspend fun update(entry: Entry) {
+        entriesRef().document(entry.id).update(
+            mapOf(
+                "date" to entry.date,
+                "location" to entry.location,
+                "geo" to entry.geo,
+                "body" to entry.body,
+                "photoUrl" to entry.photoUrl
+            )
+        ).await()
+    }
+
     suspend fun uploadPhoto(uri: Uri, contentResolver: android.content.ContentResolver): String = withContext(Dispatchers.IO) {
         val uid = auth.currentUser?.uid ?: throw IllegalStateException("Not signed in")
         val name = "${UUID.randomUUID()}.jpg"

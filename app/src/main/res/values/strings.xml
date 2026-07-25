@@ -3,6 +3,7 @@
     <string name="app_name">Postmark</string>
     <string name="cancel_btn">Cancel</string>
     <string name="new_entry">New entry</string>
+    <string name="edit_entry">Edit entry</string>
     <string name="save_btn">Save</string>
     <string name="location_label">LOCATION</string>
     <string name="detect_btn">Detect</string>
@@ -31,6 +32,7 @@
     <string name="delete_all_btn">Delete all</string>
     <string name="back_desc">Back</string>
     <string name="delete_desc">Delete</string>
+    <string name="edit_desc">Edit</string>
     <string name="entry_not_found">Entry not found.</string>
     <string name="entry_photo_desc">Entry photo</string>
     <string name="delete_this_entry">Delete this entry?</string>

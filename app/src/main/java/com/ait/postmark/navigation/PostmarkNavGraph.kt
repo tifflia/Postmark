@@ -23,6 +23,8 @@ object Routes {
     const val NEW_ENTRY = "newEntry"
     const val ENTRY_DETAIL = "entry/{entryId}"
     fun entryDetail(id: String) = "entry/$id"
+    const val EDIT_ENTRY = "editEntry/{entryId}"
+    fun editEntry(id: String) = "editEntry/$id"
 }
 
 @Composable
@@ -71,9 +73,17 @@ fun PostmarkNavGraph(authRepo: AuthRepository = remember { AuthRepository() }) {
         composable(Routes.NEW_ENTRY) {
             NewEntryScreen(onDone = { navController.popBackStack() })
         }
+        composable(Routes.EDIT_ENTRY) { backStack ->
+            val id = backStack.arguments?.getString("entryId").orEmpty()
+            NewEntryScreen(onDone = { navController.popBackStack() }, entryId = id)
+        }
         composable(Routes.ENTRY_DETAIL) { backStack ->
             val id = backStack.arguments?.getString("entryId").orEmpty()
-            EntryDetailScreen(entryId = id, onBack = { navController.popBackStack() })
+            EntryDetailScreen(
+                entryId = id,
+                onBack = { navController.popBackStack() },
+                onEdit = { editId -> navController.navigate(Routes.editEntry(editId)) }
+            )
         }
     }
 }

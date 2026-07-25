@@ -91,6 +91,7 @@ import java.io.File
 @Composable
 fun NewEntryScreen(
     onDone: () -> Unit,
+    entryId: String? = null,
     vm: NewEntryViewModel = viewModel()
 ) {
     val state by vm.state.collectAsState()
@@ -98,11 +99,11 @@ fun NewEntryScreen(
     val scope = rememberCoroutineScope()
 
     var locationExpanded by remember { mutableStateOf(true) }
-    var photoExpanded by remember { mutableStateOf(state.selectedImageUri != null) }
+    var photoExpanded by remember { mutableStateOf(false) }
     var tempImageUri by remember { mutableStateOf<Uri?>(null) }
 
-    LaunchedEffect(state.selectedImageUri) {
-        if (state.selectedImageUri != null) photoExpanded = true
+    LaunchedEffect(state.selectedImageUri, state.existingPhotoUrl) {
+        if (state.selectedImageUri != null || state.existingPhotoUrl != null) photoExpanded = true
     }
 
     val photoPickerLauncher = rememberLauncherForActivityResult(
@@ -117,8 +118,14 @@ fun NewEntryScreen(
         ActivityResultContracts.RequestPermission()
     ) { granted -> if (granted) vm.fetchCurrentLocation(context) }
 
-    LaunchedEffect(Unit) {
-        locationPermission.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+    LaunchedEffect(entryId) {
+        if (entryId != null) {
+            // Editing: prefill from the existing entry and don't auto-detect
+            // location, which would overwrite the saved one.
+            vm.loadForEdit(entryId)
+        } else {
+            locationPermission.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+        }
     }
 
     LaunchedEffect(state.saved) { if (state.saved) onDone() }
@@ -139,7 +146,7 @@ fun NewEntryScreen(
                     Text(stringResource(R.string.cancel_btn), color = StampRed, fontWeight = FontWeight.Medium)
                 }
                 Text(
-                    stringResource(R.string.new_entry),
+                    stringResource(if (state.isEditing) R.string.edit_entry else R.string.new_entry),
                     style = MaterialTheme.typography.titleMedium,
                     color = InkBlack,
                     fontWeight = FontWeight.Bold
@@ -295,9 +302,10 @@ fun NewEntryScreen(
                                 },
                             contentAlignment = Alignment.Center
                         ) {
-                            if (state.selectedImageUri != null) {
+                            val photoModel: Any? = state.selectedImageUri ?: state.existingPhotoUrl
+                            if (photoModel != null) {
                                 AsyncImage(
-                                    model = state.selectedImageUri,
+                                    model = photoModel,
                                     contentDescription = stringResource(R.string.selected_photo_desc),
                                     modifier = Modifier
                                         .fillMaxSize()
@@ -305,7 +313,7 @@ fun NewEntryScreen(
                                     contentScale = ContentScale.Crop
                                 )
                                 IconButton(
-                                    onClick = { vm.onImageSelected(null) },
+                                    onClick = { vm.onImageRemoved() },
                                     modifier = Modifier
                                         .align(Alignment.TopEnd)
                                         .padding(8.dp)

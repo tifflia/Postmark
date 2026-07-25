@@ -37,10 +37,14 @@ data class NewEntryUiState(
     val locationMode: LocationMode = LocationMode.DETECT,
     val history: List<String> = emptyList(),
     val selectedImageUri: Uri? = null,
+    val existingPhotoUrl: String? = null,
+    val editingId: String? = null,
     val isMapExpanded: Boolean = false,
     val saving: Boolean = false,
     val saved: Boolean = false
-)
+) {
+    val isEditing: Boolean get() = editingId != null
+}
 
 class NewEntryViewModel(
     private val repo: EntryRepository = EntryRepository()
@@ -66,9 +70,49 @@ class NewEntryViewModel(
         }
     }
 
+    private var loadedForEdit = false
+
+    /**
+     * Loads an existing entry into the form so it can be edited. Populates the
+     * fields once from the first snapshot; later snapshots are ignored so they
+     * don't clobber edits in progress.
+     */
+    fun loadForEdit(entryId: String) {
+        if (loadedForEdit || _state.value.editingId == entryId) return
+        loadedForEdit = true
+        viewModelScope.launch {
+            try {
+                repo.observeEntries().collect { entries ->
+                    // Populate only from the first matching snapshot; once the form
+                    // holds the entry, ignore later updates so edits aren't clobbered.
+                    if (_state.value.editingId != null) return@collect
+                    val e = entries.firstOrNull { it.id == entryId } ?: return@collect
+                    _state.update {
+                        it.copy(
+                            editingId = e.id,
+                            date = e.date,
+                            location = e.location,
+                            geo = e.geo,
+                            body = e.body,
+                            existingPhotoUrl = e.photoUrl,
+                            // Preserve the original location intent: an entry with
+                            // coordinates keeps its pin; otherwise treat it as custom.
+                            locationMode = if (e.geo != null) LocationMode.MAP else LocationMode.CUSTOM
+                        )
+                    }
+                }
+            } catch (_: Exception) {
+                // Not signed in or entry unavailable — leave the form empty.
+            }
+        }
+    }
+
     fun onLocationChange(v: String) = _state.update { it.copy(location = v) }
     fun onBodyChange(v: String) = _state.update { it.copy(body = v) }
     fun onImageSelected(uri: Uri?) = _state.update { it.copy(selectedImageUri = uri) }
+
+    /** Clears both a freshly picked photo and any existing one on an edited entry. */
+    fun onImageRemoved() = _state.update { it.copy(selectedImageUri = null, existingPhotoUrl = null) }
 
     fun setLocationMode(mode: LocationMode) {
         _state.update { it.copy(locationMode = mode) }
@@ -166,22 +210,25 @@ class NewEntryViewModel(
             _state.update { it.copy(saving = true) }
 
             try {
+                // Upload a newly picked photo; otherwise keep whatever the entry
+                // already had (null once the user removes it).
                 val photoUrl = s.selectedImageUri?.let { uri ->
                     repo.uploadPhoto(uri, contentResolver)
-                }
+                } ?: s.existingPhotoUrl
 
                 // In CUSTOM mode, we intentionally drop the GeoPoint
                 val finalGeo = if (s.locationMode == LocationMode.CUSTOM) null else s.geo
 
-                repo.add(
-                    Entry(
-                        date = s.date,
-                        location = s.location.trim(),
-                        geo = finalGeo,
-                        body = s.body.trim(),
-                        photoUrl = photoUrl
-                    )
+                val entry = Entry(
+                    id = s.editingId.orEmpty(),
+                    date = s.date,
+                    location = s.location.trim(),
+                    geo = finalGeo,
+                    body = s.body.trim(),
+                    photoUrl = photoUrl
                 )
+
+                if (s.isEditing) repo.update(entry) else repo.add(entry)
                 _state.update { it.copy(saving = false, saved = true) }
             } catch (e: Exception) {
                 // Handle upload or save error

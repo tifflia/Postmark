@@ -18,6 +18,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
@@ -53,6 +54,7 @@ import com.ait.postmark.ui.theme.PaperWhite
 fun EntryDetailScreen(
     entryId: String,
     onBack: () -> Unit,
+    onEdit: (String) -> Unit,
     vm: EntriesViewModel = viewModel()
 ) {
     val entries by vm.entries.collectAsState()
@@ -77,8 +79,15 @@ fun EntryDetailScreen(
                         R.string.back_desc
                     ), tint = InkBlack)
                 }
-                IconButton(onClick = { confirmDelete = true }) {
-                    Icon(Icons.Outlined.Delete, contentDescription = stringResource(R.string.delete_desc), tint = InkBlack)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    if (entry != null) {
+                        IconButton(onClick = { onEdit(entry.id) }) {
+                            Icon(Icons.Outlined.Edit, contentDescription = stringResource(R.string.edit_desc), tint = InkBlack)
+                        }
+                    }
+                    IconButton(onClick = { confirmDelete = true }) {
+                        Icon(Icons.Outlined.Delete, contentDescription = stringResource(R.string.delete_desc), tint = InkBlack)
+                    }
                 }
             }
 
