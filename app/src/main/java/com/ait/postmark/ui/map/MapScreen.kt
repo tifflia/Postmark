@@ -79,6 +79,7 @@ fun MapScreen(
     onOpenEntry: (String) -> Unit,
     onNewEntry: () -> Unit,
     onSwitchToList: () -> Unit,
+    onSignOut: () -> Unit,
     vm: EntriesViewModel = viewModel()
 ) {
     val entries by vm.entries.collectAsState()
@@ -172,7 +173,8 @@ fun MapScreen(
                         PostmarkOverflowMenu(
                             expanded = menuOpen,
                             onDismiss = { menuOpen = false },
-                            onDeleteAll = { vm.deleteAll() }
+                            onDeleteAll = { vm.deleteAll() },
+                            onSignOut = onSignOut
                         )
                     }
                 }

@@ -67,7 +67,12 @@ fun PostmarkNavGraph(authRepo: AuthRepository = remember { AuthRepository() }) {
                 vm = entriesVm,
                 onOpenEntry = { id -> navController.navigate(Routes.entryDetail(id)) },
                 onNewEntry = { navController.navigate(Routes.NEW_ENTRY) },
-                onSwitchToList = { navController.navigate(Routes.LIST) { popUpTo(Routes.MAP) { inclusive = true } } }
+                onSwitchToList = { navController.navigate(Routes.LIST) { popUpTo(Routes.MAP) { inclusive = true } } },
+                onSignOut = {
+                    entriesVm.clearDateRange()
+                    authRepo.signOut()
+                    navController.navigate(Routes.LOGIN) { popUpTo(0) }
+                }
             )
         }
         composable(Routes.NEW_ENTRY) {
