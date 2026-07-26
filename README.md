@@ -2,6 +2,12 @@
 
 A travel journal Android app that allows users to capture memories, attach photos, and visualize their journey on an interactive map. Made by and for people who want to archive memories in relation to physical space!
 
+<p align="center">
+    <img width="200" alt="Postmark login" src="https://github.com/user-attachments/assets/8621748f-d807-4404-8e56-33988a5b5ecc" />
+    <img width="200" alt="Postmark entries list" src="https://github.com/user-attachments/assets/e021de15-d1e8-4924-87f1-1e2c51b624fd" />
+    <img width="200" alt="Postmark entries map" src="https://github.com/user-attachments/assets/2b70ce7a-1f7f-4626-8b77-2a382b052ce7" />
+</p>
+
 ## ✨ Features
 
 - **Personal Journaling**: Create, edit, and delete text-based travel entries on the go.
