@@ -10,9 +10,12 @@ import io.github.jan.supabase.createSupabaseClient
 import io.github.jan.supabase.storage.Storage
 import io.github.jan.supabase.storage.storage
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import java.util.UUID
@@ -38,12 +41,29 @@ class EntryRepository {
         db.collection("users").document(uid).collection("entries")
     } ?: throw IllegalStateException("Not signed in")
 
-    /** Real-time stream of all entries for the current user, newest first. */
-    fun observeEntries(): Flow<List<Entry>> = callbackFlow {
-        val registration = entriesRef()
+    @OptIn(ExperimentalCoroutinesApi::class)
+    fun observeEntries(): Flow<List<Entry>> = authUidFlow().flatMapLatest { uid ->
+        if (uid == null) flowOf(emptyList()) else entriesFlow(uid)
+    }
+
+    /** Emits the signed-in user's uid, or null when signed out. */
+    private fun authUidFlow(): Flow<String?> = callbackFlow {
+        val listener = FirebaseAuth.AuthStateListener { trySend(it.currentUser?.uid) }
+        auth.addAuthStateListener(listener)
+        awaitClose { auth.removeAuthStateListener(listener) }
+    }
+
+    private fun entriesFlow(uid: String): Flow<List<Entry>> = callbackFlow {
+        val registration = db.collection("users").document(uid).collection("entries")
             .orderBy("date", Query.Direction.DESCENDING)
             .addSnapshotListener { snap, err ->
-                if (err != null) { close(err); return@addSnapshotListener }
+                if (err != null) {
+                    // A permission error can still arrive in the brief window
+                    // between sign-out and this listener being torn down. Emit
+                    // empty rather than propagating it as a fatal exception.
+                    trySend(emptyList())
+                    return@addSnapshotListener
+                }
                 val list = snap?.documents.orEmpty().mapNotNull { doc ->
                     doc.toObject(Entry::class.java)?.also { it.id = doc.id }
                 }
